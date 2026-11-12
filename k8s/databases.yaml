@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-db
+  template:
+    metadata:
+      labels:
+        app: mysql-db
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "rootpassword"
+        - name: MYSQL_DATABASE
+          value: "auramartdb"
+        - name: MYSQL_USER
+          value: "auramart"
+        - name: MYSQL_PASSWORD
+          value: "auramart123"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  type: ClusterIP
+  selector:
+    app: mysql-db
+  ports:
+  - port: 3306
+    targetPort: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auramart-mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auramart-mongo
+  template:
+    metadata:
+      labels:
+        app: auramart-mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:7-jammy
+        ports:
+        - containerPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auramart-mongo-service
+spec:
+  type: ClusterIP
+  selector:
+    app: auramart-mongo
+  ports:
+  - port: 27017
+    targetPort: 27017

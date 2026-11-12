@@ -1,0 +1,93 @@
+
+services:
+  mysql-service:
+    image: mysql:8.0
+    container_name: auramart-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: auramartdb
+      MYSQL_USER: auramart
+      MYSQL_PASSWORD: auramart123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  auramart-mongo-service:
+    image: mongo:7-jammy
+    container_name: auramart-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  catalog-service:
+    build: ./catalog-service
+    container_name: catalog-service
+    ports:
+      - "5001:5001"
+    environment:
+      PORT: 5001
+      MYSQL_HOST: mysql-service
+      MYSQL_PORT: 3306
+      MYSQL_USER: auramart
+      MYSQL_PASSWORD: auramart123
+      MYSQL_DATABASE: auramartdb
+    depends_on:
+      - mysql-service
+
+  search-service:
+    build: ./search-service
+    container_name: search-service
+    ports:
+      - "5002:5002"
+    environment:
+      PORT: 5002
+      CATALOG_URL: http://catalog-service:5001
+    depends_on:
+      - catalog-service
+
+  recommendation-service:
+    build: ./recommendation-service
+    container_name: recommendation-service
+    ports:
+      - "5003:5003"
+    environment:
+      PORT: 5003
+      CATALOG_URL: http://catalog-service:5001
+    depends_on:
+      - catalog-service
+
+  chatbot-service:
+    build: ./chatbot-service
+    container_name: chatbot-service
+    ports:
+      - "5004:5004"
+    environment:
+      PORT: 5004
+      CATALOG_URL: http://catalog-service:5001
+      MONGO_URI: mongodb://auramart-mongo-service:27017/auramart_chat
+    depends_on:
+      - catalog-service
+      - auramart-mongo-service
+
+  frontend-gateway:
+    build: ./frontend-gateway
+    container_name: frontend-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      CATALOG_URL: http://catalog-service:5001
+      SEARCH_URL: http://search-service:5002
+      REC_URL: http://recommendation-service:5003
+      CHAT_URL: http://chatbot-service:5004
+    depends_on:
+      - catalog-service
+      - search-service
+      - recommendation-service
+      - chatbot-service
+
+volumes:
+  mysql_data:
+  mongo_data:

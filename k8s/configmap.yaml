@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auramart-microservices-config
+data:
+  CATALOG_URL: "http://catalog-service:5001"
+  SEARCH_URL: "http://search-service:5002"
+  REC_URL: "http://recommendation-service:5003"
+  CHAT_URL: "http://chatbot-service:5004"
+  MYSQL_HOST: "mysql-service"
+  MYSQL_PORT: "3306"
+  MYSQL_USER: "auramart"
+  MYSQL_PASSWORD: "auramart123"
+  MYSQL_DATABASE: "auramartdb"
+  MONGO_URI: "mongodb://auramart-mongo-service:27017/auramart_chat"

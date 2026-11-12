@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend-gateway
+  template:
+    metadata:
+      labels:
+        app: frontend-gateway
+    spec:
+      containers:
+      - name: frontend-gateway
+        image: <your-dockerhub-username>/auramart-frontend-gateway:latest
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: auramart-microservices-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog-service
+  template:
+    metadata:
+      labels:
+        app: catalog-service
+    spec:
+      containers:
+      - name: catalog-service
+        image: <your-dockerhub-username>/auramart-catalog-service:latest
+        ports:
+        - containerPort: 5001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search-service
+  template:
+    metadata:
+      labels:
+        app: search-service
+    spec:
+      containers:
+      - name: search-service
+        image: <your-dockerhub-username>/auramart-search-service:latest
+        ports:
+        - containerPort: 5002
+        envFrom:
+        - configMapRef:
+            name: auramart-microservices-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recommendation-service
+  template:
+    metadata:
+      labels:
+        app: recommendation-service
+    spec:
+      containers:
+      - name: recommendation-service
+        image: <your-dockerhub-username>/auramart-recommendation-service:latest
+        ports:
+        - containerPort: 5003
+        envFrom:
+        - configMapRef:
+            name: auramart-microservices-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatbot-service
+  template:
+    metadata:
+      labels:
+        app: chatbot-service
+    spec:
+      containers:
+      - name: chatbot-service
+        image: <your-dockerhub-username>/auramart-chatbot-service:latest
+        ports:
+        - containerPort: 5004
+        envFrom:
+        - configMapRef:
+            name: auramart-microservices-config

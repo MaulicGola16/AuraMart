@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraMart AI | Next-Gen Retail</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; background: #0f172a; color: #f8fafc; }
+    header { background: #1e293b; padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+    header h1 { margin: 0; font-size: 1.5rem; color: #38bdf8; }
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+    .search-box { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .search-box input { flex: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #fff; font-size: 1rem; }
+    .search-box button { padding: 0.8rem 1.4rem; background: #0284c7; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .ai-badge { font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .card { background: #1e293b; border: 1px solid #334155; padding: 1rem; border-radius: 10px; cursor: pointer; transition: transform 0.15s; }
+    .card:hover { transform: translateY(-3px); border-color: #38bdf8; }
+    .card h3 { margin: 0 0 0.5rem 0; font-size: 1.05rem; }
+    .price { color: #4ade80; font-weight: bold; font-size: 1.1rem; }
+    .tags { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
+    .panel { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 1.2rem; margin-bottom: 1.5rem; }
+    .panel h2 { margin-top: 0; font-size: 1.2rem; color: #38bdf8; }
+    .chat-box { height: 240px; overflow-y: auto; background: #0f172a; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.8rem; border: 1px solid #334155; }
+    .msg { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.9rem; line-height: 1.4; }
+    .msg.user { background: #0284c7; text-align: right; margin-left: 20%; }
+    .msg.bot { background: #334155; margin-right: 15%; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>✨ AuraMart AI — Intelligent Retail Platform</h1>
+    <span>Kubernetes + LoadBalancer Active</span>
+  </header>
+
+  <div class="container">
+    <!-- Left Column: AI Search & Product Catalog -->
+    <div>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Try AI Search: 'jogging gear', 'coding setup', 'party wear'..." />
+        <button onclick="runSearch()">AI Search</button>
+        <button onclick="loadProducts()" style="background:#475569;">Reset</button>
+      </div>
+      <div id="searchMeta" class="ai-badge">Click any product card to trigger AI Personalized Recommendations →</div>
+      <div id="productGrid" class="grid"></div>
+    </div>
+
+    <!-- Right Column: AI Recommendations & AI Chatbot -->
+    <div>
+      <div class="panel">
+        <h2>🎯 AI Recommendations</h2>
+        <div id="recContainer" style="color:#94a3b8; font-size:0.9rem;">
+          Select a product from the catalog to compute real-time item similarity recommendations.
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>🤖 AuraBot Shopping Assistant</h2>
+        <div id="chatBox" class="chat-box">
+          <div class="msg bot">Hi! Ask me for gym gear, work accessories, items under ₹2000, or return policies.</div>
+        </div>
+        <div class="search-box" style="margin-bottom:0;">
+          <input type="text" id="chatInput" placeholder="Ask AuraBot..." onkeypress="if(event.key==='Enter') sendChat()" />
+          <button onclick="sendChat()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadProducts() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchMeta').innerText = 'Showing full catalog. Click any product for AI Recommendations.';
+      const res = await fetch('/api/products');
+      const items = await res.json();
+      renderGrid(items);
+    }
+
+    async function runSearch() {
+      const q = document.getElementById('searchInput').value;
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      document.getElementById('searchMeta').innerText =
+        `AI Expanded Query Terms: [${data.expandedTerms.join(', ')}] — Found ${data.results.length} results`;
+      renderGrid(data.results);
+    }
+
+    function renderGrid(items) {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = items.map(p => `
+        <div class="card" onclick="loadRecommendations(${p.id})">
+          <h3>${p.name}</h3>
+          <div style="font-size:0.85rem; color:#cbd5e1;">${p.category} • ⭐ ${p.rating}</div>
+          <div class="price" style="margin-top:0.4rem;">₹${p.price}</div>
+          ${p.relevanceScore ? `<div style="font-size:0.75rem; color:#38bdf8; margin-top:4px;">AI Relevance Score: ${p.relevanceScore}</div>` : ''}
+          <div class="tags">#${p.tags.slice(0, 4).join(' #')}</div>
+        </div>
+      `).join('');
+    }
+
+    async function loadRecommendations(id) {
+      const res = await fetch(`/api/recommendations/${id}`);
+      const data = await res.json();
+      const container = document.getElementById('recContainer');
+      container.innerHTML = `<div style="margin-bottom:0.6rem; color:#f8fafc;">Because you viewed <b>${data.baseProduct}</b>:</div>` +
+        data.recommendations.map(r => `
+          <div style="padding:0.6rem; background:#0f172a; border-radius:6px; margin-bottom:0.5rem; border-left:3px solid #38bdf8;">
+            <div style="font-weight:bold; color:#f8fafc;">${r.name} — <span style="color:#4ade80;">₹${r.price}</span></div>
+            <div style="font-size:0.8rem; color:#94a3b8;">${r.matchReason} (Score: ${r.similarityScore})</div>
+          </div>
+        `).join('');
+    }
+
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chatBox = document.getElementById('chatBox');
+      chatBox.innerHTML += `<div class="msg user">${text}</div>`;
+      input.value = '';
+
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      const data = await res.json();
+      chatBox.innerHTML += `<div class="msg bot">${data.reply}</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
