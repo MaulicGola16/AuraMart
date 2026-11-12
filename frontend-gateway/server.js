@@ -39,5 +39,34 @@ app.post('/api/chat', async (req, res) => {
   res.json(await r.json());
 });
 
+// Auth & Cart Gateway Proxies
+app.post('/api/auth/login', async (req, res) => {
+  const r = await fetch(`${CATALOG_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req.body)
+  });
+  res.status(r.status).json(await r.json());
+});
+
+app.get('/api/cart/:userId', async (req, res) => {
+  const r = await fetch(`${CATALOG_URL}/cart/${req.params.userId}`);
+  res.json(await r.json());
+});
+
+app.post('/api/cart/add', async (req, res) => {
+  const r = await fetch(`${CATALOG_URL}/cart/add`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req.body)
+  });
+  res.json(await r.json());
+});
+
+app.delete('/api/cart/remove/:id', async (req, res) => {
+  const r = await fetch(`${CATALOG_URL}/cart/remove/${req.params.id}`, { method: 'DELETE' });
+  res.json(await r.json());
+});
+
 app.get('/health', (req, res) => res.json({ service: "frontend-gateway", status: "UP" }));
 app.listen(PORT, '0.0.0.0', () => console.log(`Frontend Gateway running on ${PORT}`));

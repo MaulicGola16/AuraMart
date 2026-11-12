@@ -3,113 +3,572 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AuraMart AI | Next-Gen Retail</title>
+  <title>AuraMart AI | Modern Retail Storefront</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { margin: 0; background: #0f172a; color: #f8fafc; }
-    header { background: #1e293b; padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
-    header h1 { margin: 0; font-size: 1.5rem; color: #38bdf8; }
-    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
-    .search-box { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-    .search-box input { flex: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #fff; font-size: 1rem; }
-    .search-box button { padding: 0.8rem 1.4rem; background: #0284c7; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    .ai-badge { font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
-    .card { background: #1e293b; border: 1px solid #334155; padding: 1rem; border-radius: 10px; cursor: pointer; transition: transform 0.15s; }
-    .card:hover { transform: translateY(-3px); border-color: #38bdf8; }
-    .card h3 { margin: 0 0 0.5rem 0; font-size: 1.05rem; }
-    .price { color: #4ade80; font-weight: bold; font-size: 1.1rem; }
-    .tags { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; }
-    .panel { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 1.2rem; margin-bottom: 1.5rem; }
-    .panel h2 { margin-top: 0; font-size: 1.2rem; color: #38bdf8; }
-    .chat-box { height: 240px; overflow-y: auto; background: #0f172a; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.8rem; border: 1px solid #334155; }
-    .msg { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: 6px; font-size: 0.9rem; line-height: 1.4; }
-    .msg.user { background: #0284c7; text-align: right; margin-left: 20%; }
-    .msg.bot { background: #334155; margin-right: 15%; }
+    :root {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --emerald: #059669;
+      --emerald-soft: #ecfdf5;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 20px 40px rgba(15, 23, 42, 0.16);
+    }
+
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { margin: 0; background: var(--bg-page); color: var(--text-dark); }
+    .hidden { display: none !important; }
+
+    /* ==================== 1. DEDICATED LOGIN PAGE ==================== */
+    .login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 50%, #eef2ff 100%);
+      padding: 1.5rem;
+    }
+    .login-card {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 20px; box-shadow: var(--shadow-lg);
+      max-width: 920px; width: 100%; display: grid; grid-template-columns: 1.05fr 1fr;
+      overflow: hidden;
+    }
+    @media (max-width: 780px) { .login-card { grid-template-columns: 1fr; } }
+
+    .login-banner {
+      background: linear-gradient(145deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%);
+      color: white; padding: 3rem 2.5rem; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .login-banner h1 { margin: 0.75rem 0 0.5rem; font-size: 1.85rem; font-weight: 800; letter-spacing: -0.02em; }
+    .login-banner p { margin: 0; color: #dbeafe; font-size: 0.92rem; line-height: 1.6; }
+    .feature-list { list-style: none; padding: 0; margin: 2rem 0 0; display: grid; gap: 0.75rem; font-size: 0.85rem; color: #eff6ff; }
+    .feature-list li { display: flex; align-items: center; gap: 0.6rem; }
+
+    .login-form-wrap { padding: 3rem 2.5rem; display: flex; flex-direction: column; justify-content: center; }
+    .login-form-wrap h2 { margin: 0 0 0.35rem; font-size: 1.5rem; font-weight: 700; }
+    .login-form-wrap .sub { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.75rem; }
+    .form-group { margin-bottom: 1.1rem; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; color: #334155; }
+    .form-group input {
+      width: 100%; padding: 0.75rem 0.9rem; border-radius: 10px; border: 1px solid var(--border);
+      font-size: 0.92rem; outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
+
+    /* ==================== 2. MAIN RETAIL STOREFRONT ==================== */
+    header {
+      position: sticky; top: 0; z-index: 90;
+      background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px);
+      padding: 0.85rem 2rem; display: flex; justify-content: space-between;
+      align-items: center; border-bottom: 1px solid var(--border); gap: 1rem; flex-wrap: wrap;
+    }
+    .brand { display: flex; align-items: center; gap: 0.7rem; cursor: pointer; }
+    .brand-icon {
+      background: var(--primary); color: white; width: 38px; height: 38px;
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.15rem;
+    }
+    .brand h1 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-dark); }
+    .brand span { font-size: 0.74rem; color: var(--text-muted); display: block; }
+
+    .header-search { flex: 1; max-width: 520px; display: flex; gap: 0.5rem; }
+    .header-search input {
+      flex: 1; padding: 0.65rem 1rem; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg-subtle); font-size: 0.9rem; outline: none;
+    }
+    .header-search input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+    .user-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .user-pill {
+      background: var(--bg-subtle); border: 1px solid var(--border); padding: 0.45rem 0.85rem;
+      border-radius: 999px; font-size: 0.84rem; font-weight: 600; color: var(--text-dark);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 0.65rem 1.2rem; background: var(--primary); color: white;
+      border: none; border-radius: 10px; cursor: pointer; font-weight: 600;
+      font-size: 0.88rem; transition: all 0.18s;
+    }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-outline { background: var(--bg-surface); color: var(--text-dark); border: 1px solid var(--border); }
+    .btn-outline:hover { background: var(--bg-subtle); }
+    .btn-cart {
+      background: var(--text-dark); color: white; width: 100%; margin-top: 0.85rem; padding: 0.65rem;
+    }
+    .btn-cart:hover { background: var(--primary); }
+    .btn-checkout { background: var(--emerald); width: 100%; margin-top: 0.85rem; padding: 0.75rem; font-size: 0.92rem; }
+    .btn-checkout:hover { background: #047857; }
+    .btn-remove {
+      background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;
+      padding: 0.25rem 0.55rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 600;
+    }
+    .btn-remove:hover { background: #dc2626; color: white; }
+
+    /* Promotional Hero Banner */
+    .hero { max-width: 1340px; margin: 1.5rem auto 0; padding: 0 1.5rem; }
+    .hero-banner {
+      background: linear-gradient(115deg, #1e293b 0%, #0f172a 60%, #1e3a8a 100%);
+      color: white; border-radius: 16px; padding: 1.6rem 2rem;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+      box-shadow: var(--shadow-md);
+    }
+    .hero-banner h2 { margin: 0 0 0.3rem; font-size: 1.35rem; font-weight: 700; }
+    .hero-banner p { margin: 0; color: #cbd5e1; font-size: 0.88rem; }
+    .stack-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .stack-badge {
+      background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.35rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+    }
+
+    /* Main Content Grid */
+    .container {
+      max-width: 1340px; margin: 1.5rem auto 4rem; padding: 0 1.5rem;
+      display: grid; grid-template-columns: 2.2fr 1fr; gap: 1.75rem; align-items: start;
+    }
+    @media (max-width: 960px) { .container { grid-template-columns: 1fr; } }
+
+    .cat-bar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .cat-btn {
+      background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted);
+      padding: 0.45rem 1rem; border-radius: 999px; font-size: 0.82rem; cursor: pointer; font-weight: 600;
+    }
+    .cat-btn.active, .cat-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .search-status {
+      background: var(--primary-soft); border: 1px solid #bfdbfe; color: #1e40af;
+      padding: 0.6rem 1rem; border-radius: 10px; font-size: 0.84rem; margin-bottom: 1.15rem;
+    }
+
+    /* Product Cards */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); gap: 1.25rem; }
+    .card {
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: #cbd5e1; }
+    .card.selected { border: 2px solid var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); }
+
+    .img-wrap { position: relative; width: 100%; height: 185px; background: var(--bg-subtle); overflow: hidden; }
+    .img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s ease; }
+    .card:hover .img-wrap img { transform: scale(1.05); }
+    .cat-tag {
+      position: absolute; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.92);
+      padding: 0.25rem 0.65rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+      color: var(--text-dark); box-shadow: var(--shadow-sm);
+    }
+    .rating-tag {
+      position: absolute; top: 10px; right: 10px; background: rgba(15, 23, 42, 0.85);
+      padding: 0.25rem 0.55rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: #fbbf24;
+    }
+
+    .card-body { padding: 1.05rem; display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
+    .card h3 { margin: 0 0 0.4rem; font-size: 1.02rem; font-weight: 700; color: var(--text-dark); }
+    .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem; }
+    .price { color: var(--text-dark); font-weight: 800; font-size: 1.18rem; }
+    .match-badge { background: var(--emerald-soft); color: var(--emerald); font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 6px; }
+    .tags { font-size: 0.74rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+    /* Sidebar Panels */
+    .panel {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow-sm);
+    }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.9rem; border-bottom: 1px solid var(--border); padding-bottom: 0.65rem; }
+    .panel h2 { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-dark); }
+    .tech-tag { font-size: 0.7rem; background: var(--bg-subtle); color: var(--text-muted); padding: 0.2rem 0.55rem; border-radius: 6px; font-weight: 600; }
+
+    .cart-row { display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
+    .cart-thumb { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+
+    .rec-item {
+      display: flex; gap: 0.75rem; align-items: center; padding: 0.65rem;
+      background: var(--bg-page); border-radius: 10px; margin-bottom: 0.6rem; border: 1px solid var(--border);
+    }
+    .rec-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; }
+
+    /* ==================== 3. FLOATING CHATBOT WIDGET ==================== */
+    .chat-launcher {
+      position: fixed; bottom: 24px; right: 24px; z-index: 200;
+      background: var(--primary); color: white; border: none;
+      border-radius: 999px; padding: 0.85rem 1.35rem; font-size: 0.92rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.55rem; cursor: pointer;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); transition: transform 0.2s;
+    }
+    .chat-launcher:hover { transform: scale(1.04); background: var(--primary-hover); }
+
+    .chat-popup {
+      position: fixed; bottom: 84px; right: 24px; z-index: 200;
+      width: 360px; max-width: calc(100vw - 32px);
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: 16px; box-shadow: var(--shadow-lg); overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .chat-popup-header {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb); color: white;
+      padding: 0.9rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
+    }
+    .chat-popup-header h3 { margin: 0; font-size: 0.98rem; font-weight: 700; }
+    .chat-popup-header span { font-size: 0.72rem; color: #dbeafe; display: block; }
+    .close-chat { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 0.2rem; }
+
+    .chat-messages {
+      height: 270px; overflow-y: auto; padding: 1rem; background: var(--bg-page);
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+    .msg { padding: 0.6rem 0.85rem; border-radius: 12px; font-size: 0.84rem; line-height: 1.45; max-width: 84%; }
+    .msg.user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+    .msg.bot { background: var(--bg-surface); color: var(--text-dark); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
+
+    .chat-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; padding: 0.55rem 0.85rem 0; background: var(--bg-surface); border-top: 1px solid var(--border); }
+    .chip {
+      background: var(--bg-subtle); border: 1px solid var(--border); color: #334155;
+      font-size: 0.72rem; padding: 0.25rem 0.6rem; border-radius: 999px; cursor: pointer; font-weight: 500;
+    }
+    .chip:hover { border-color: var(--primary); color: var(--primary); }
+
+    .chat-input-area { display: flex; gap: 0.45rem; padding: 0.75rem 0.85rem; background: var(--bg-surface); }
+    .chat-input-area input {
+      flex: 1; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid var(--border);
+      font-size: 0.85rem; outline: none;
+    }
+    .chat-input-area input:focus { border-color: var(--primary); }
   </style>
 </head>
 <body>
-  <header>
-    <h1>✨ AuraMart AI — Intelligent Retail Platform</h1>
-    <span>Kubernetes + LoadBalancer Active</span>
-  </header>
 
-  <div class="container">
-    <!-- Left Column: AI Search & Product Catalog -->
-    <div>
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Try AI Search: 'jogging gear', 'coding setup', 'party wear'..." />
-        <button onclick="runSearch()">AI Search</button>
-        <button onclick="loadProducts()" style="background:#475569;">Reset</button>
+  <!-- ==================== 1. DEDICATED LOGIN PAGE ==================== -->
+  <div id="loginPage" class="login-screen">
+    <div class="login-card">
+      <div class="login-banner">
+        <div>
+          <span style="background:rgba(255,255,255,0.2); padding:0.3rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:700;">✨ AURAMART RETAIL CLOUD</span>
+          <h1>Smart Shopping, Powered by AI.</h1>
+          <p>Sign in to access personalized product recommendations, semantic AI search, your persistent MySQL shopping cart, and AuraBot support.</p>
+          <ul class="feature-list">
+            <li>✓ Semantic Search Query Expansion Engine</li>
+            <li>✓ Real-Time Tag-Similarity Product Recommendations</li>
+            <li>✓ 24/7 AuraBot Shopping Concierge (MongoDB)</li>
+            <li>✓ Cloud-Native 5-Microservices AKS Architecture</li>
+          </ul>
+        </div>
+        <div style="font-size:0.78rem; color:#bfdbfe;">Demo Credentials Pre-filled • Instant Registration Supported</div>
       </div>
-      <div id="searchMeta" class="ai-badge">Click any product card to trigger AI Personalized Recommendations →</div>
-      <div id="productGrid" class="grid"></div>
+
+      <div class="login-form-wrap">
+        <h2>Welcome Back</h2>
+        <p class="sub">Sign in with your account or enter a new email to register automatically.</p>
+        <div class="form-group">
+          <label>Full Name (for new accounts)</label>
+          <input type="text" id="loginName" value="Maulic" placeholder="Enter your name" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="loginEmail" value="maulic@auramart.in" placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPass" value="1234" placeholder="••••••••" onkeypress="if(event.key==='Enter') loginUser()" />
+        </div>
+        <button class="btn" style="width:100%; padding:0.85rem; font-size:0.95rem; margin-top:0.5rem;" onclick="loginUser()">
+          Sign In to Storefront →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. MAIN RETAIL STOREFRONT ==================== -->
+  <div id="mainApp" class="hidden">
+    <header>
+      <div class="brand" onclick="loadProducts()">
+        <div class="brand-icon">A</div>
+        <div>
+          <h1>AuraMart</h1>
+          <span>AI-Powered Retail Store</span>
+        </div>
+      </div>
+
+      <div class="header-search">
+        <input type="text" id="searchInput" placeholder="Search products or try 'jogging gear', 'coding setup', 'party wear'..." onkeypress="if(event.key==='Enter') runSearch()" />
+        <button class="btn" onclick="runSearch()">Search</button>
+        <button class="btn btn-outline" onclick="loadProducts()">Reset</button>
+      </div>
+
+      <div class="user-actions">
+        <span class="user-pill" id="userGreeting">👤 Maulic</span>
+        <button class="btn btn-outline" onclick="logoutUser()">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <div class="hero-banner">
+        <div>
+          <h2>Season Essentials & Tech Gear</h2>
+          <p>Click any product card to trigger real-time AI item similarity recommendations.</p>
+        </div>
+        <div class="stack-badges">
+          <span class="stack-badge">5 Microservices</span>
+          <span class="stack-badge">MySQL Catalog & Cart</span>
+          <span class="stack-badge">MongoDB Chat History</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Right Column: AI Recommendations & AI Chatbot -->
-    <div>
-      <div class="panel">
-        <h2>🎯 AI Recommendations</h2>
-        <div id="recContainer" style="color:#94a3b8; font-size:0.9rem;">
-          Select a product from the catalog to compute real-time item similarity recommendations.
+    <div class="container">
+      <!-- Left: Category Tabs & Product Grid -->
+      <div>
+        <div class="cat-bar">
+          <button class="cat-btn active" onclick="filterCategory('All', this)">All Products</button>
+          <button class="cat-btn" onclick="filterCategory('Footwear', this)">Footwear</button>
+          <button class="cat-btn" onclick="filterCategory('Electronics', this)">Electronics</button>
+          <button class="cat-btn" onclick="filterCategory('Apparel', this)">Apparel</button>
+          <button class="cat-btn" onclick="filterCategory('Accessories', this)">Accessories</button>
         </div>
+
+        <div id="searchMeta" class="search-status">
+          Showing full catalog. Select any item to view AI-matched recommendations.
+        </div>
+
+        <div id="productGrid" class="grid"></div>
       </div>
 
-      <div class="panel">
-        <h2>🤖 AuraBot Shopping Assistant</h2>
-        <div id="chatBox" class="chat-box">
-          <div class="msg bot">Hi! Ask me for gym gear, work accessories, items under ₹2000, or return policies.</div>
+      <!-- Right: Cart & AI Recommendations -->
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <h2>🛒 Shopping Cart <span id="cartCount" style="color:var(--primary);">(0)</span></h2>
+            <span class="tech-tag">MySQL DB</span>
+          </div>
+          <div id="cartContainer" style="color:var(--text-muted); font-size:0.86rem;">
+            Loading cart...
+          </div>
         </div>
-        <div class="search-box" style="margin-bottom:0;">
-          <input type="text" id="chatInput" placeholder="Ask AuraBot..." onkeypress="if(event.key==='Enter') sendChat()" />
-          <button onclick="sendChat()">Send</button>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>✨ Recommended For You</h2>
+            <span class="tech-tag">AI Engine</span>
+          </div>
+          <div id="recContainer" style="color:var(--text-muted); font-size:0.86rem;">
+            Click on any product card to generate personalized AI recommendations based on shared semantic attributes.
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ==================== 3. FLOATING BOTTOM-RIGHT CHATBOT ==================== -->
+    <button class="chat-launcher" onclick="toggleChat()">
+      💬 AuraBot AI
+    </button>
+
+    <div id="chatPopup" class="chat-popup hidden">
+      <div class="chat-popup-header">
+        <div>
+          <h3>🤖 AuraBot Concierge</h3>
+          <span>AI Shopping Assistant • MongoDB Logged</span>
+        </div>
+        <button class="close-chat" onclick="toggleChat()">✕</button>
+      </div>
+
+      <div id="chatBox" class="chat-messages">
+        <div class="msg bot">Hi! I'm AuraBot. Ask me for outfit ideas, gym gear, items under ₹2,000, or return policies!</div>
+      </div>
+
+      <div class="chat-chips">
+        <span class="chip" onclick="quickAsk('Items under 2000')">Under ₹2,000</span>
+        <span class="chip" onclick="quickAsk('Gym gear')">Gym gear</span>
+        <span class="chip" onclick="quickAsk('Return policy')">Returns</span>
+      </div>
+
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()" />
+        <button class="btn" style="padding:0.55rem 0.9rem;" onclick="sendChat()">Send</button>
       </div>
     </div>
   </div>
 
   <script>
+    const productImages = {
+      "AeroStride Running Shoes": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+      "SonicPulse ANC Headphones": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+      "Noir Formal Cotton Shirt": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80",
+      "ProFit Smart Fitness Watch": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+      "Urban Nomad Laptop Backpack": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
+      "ActiveDry Gym Training Shorts": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=600&q=80",
+      "ErgoMech Wireless Keyboard": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80",
+      "HydroCore Insulated Flask": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80"
+    };
+    const fallbackImg = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80";
+    const getImg = (name) => productImages[name] || fallbackImg;
+
+    let allProducts = [];
+    let selectedProductId = null;
+    let currentUser = JSON.parse(localStorage.getItem('auramart_user') || 'null');
+
+    function checkView() {
+      if (currentUser) {
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        document.getElementById('userGreeting').innerText = `👤 ${currentUser.name}`;
+        loadProducts();
+        loadCart();
+      } else {
+        document.getElementById('loginPage').classList.remove('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
+      }
+    }
+
+    async function loginUser() {
+      const name = document.getElementById('loginName').value.trim();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPass').value.trim();
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) return alert(data.error || 'Login failed');
+      currentUser = data.user;
+      localStorage.setItem('auramart_user', JSON.stringify(currentUser));
+      checkView();
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      localStorage.removeItem('auramart_user');
+      checkView();
+    }
+
+    function toggleChat() {
+      document.getElementById('chatPopup').classList.toggle('hidden');
+    }
+
+    async function loadCart() {
+      if (!currentUser) return;
+      const res = await fetch(`/api/cart/${currentUser.id}`);
+      const items = await res.json();
+      const totalQty = items.reduce((sum, i) => sum + i.quantity, 0);
+      const totalPrice = items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+      document.getElementById('cartCount').innerText = `(${totalQty})`;
+      const container = document.getElementById('cartContainer');
+      if (items.length === 0) {
+        container.innerHTML = 'Your cart is empty. Click <b>+ Add to Cart</b> on any item!';
+        return;
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="cart-row">
+          <img src="${getImg(item.name)}" class="cart-thumb" alt="${item.name}" />
+          <div style="flex:1;">
+            <div style="color:var(--text-dark); font-weight:600; font-size:0.85rem;">${item.name}</div>
+            <div style="color:var(--emerald); font-size:0.8rem; font-weight:700;">₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}</div>
+          </div>
+          <button class="btn-remove" onclick="removeFromCart(${item.cartItemId})">Remove</button>
+        </div>
+      `).join('') + `
+        <div style="margin-top:0.9rem; display:flex; justify-content:space-between; font-weight:800; font-size:0.98rem;">
+          <span>Order Total:</span>
+          <span style="color:var(--emerald);">₹${totalPrice}</span>
+        </div>
+        <button class="btn btn-checkout" onclick="alert('✅ Order placed for ₹${totalPrice}! Thank you for shopping with AuraMart.')">Proceed to Checkout</button>
+      `;
+    }
+
+    async function addToCart(event, productId) {
+      event.stopPropagation();
+      await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.id, productId })
+      });
+      loadCart();
+    }
+
+    async function removeFromCart(cartItemId) {
+      await fetch(`/api/cart/remove/${cartItemId}`, { method: 'DELETE' });
+      loadCart();
+    }
+
     async function loadProducts() {
       document.getElementById('searchInput').value = '';
-      document.getElementById('searchMeta').innerText = 'Showing full catalog. Click any product for AI Recommendations.';
+      document.querySelectorAll('.cat-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+      document.getElementById('searchMeta').innerText = 'Showing full catalog. Select any item to view AI-matched recommendations.';
       const res = await fetch('/api/products');
-      const items = await res.json();
-      renderGrid(items);
+      allProducts = await res.json();
+      renderGrid(allProducts);
+    }
+
+    function filterCategory(cat, btnEl) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+      if (cat === 'All') return renderGrid(allProducts);
+      renderGrid(allProducts.filter(p => p.category === cat));
     }
 
     async function runSearch() {
       const q = document.getElementById('searchInput').value;
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
-      document.getElementById('searchMeta').innerText =
-        `AI Expanded Query Terms: [${data.expandedTerms.join(', ')}] — Found ${data.results.length} results`;
+      document.getElementById('searchMeta').innerHTML =
+        `🔍 <b>AI Query Expansion:</b> [${data.expandedTerms.join(', ')}] — Found <b>${data.results.length}</b> matching products`;
       renderGrid(data.results);
     }
 
     function renderGrid(items) {
       const grid = document.getElementById('productGrid');
       grid.innerHTML = items.map(p => `
-        <div class="card" onclick="loadRecommendations(${p.id})">
-          <h3>${p.name}</h3>
-          <div style="font-size:0.85rem; color:#cbd5e1;">${p.category} • ⭐ ${p.rating}</div>
-          <div class="price" style="margin-top:0.4rem;">₹${p.price}</div>
-          ${p.relevanceScore ? `<div style="font-size:0.75rem; color:#38bdf8; margin-top:4px;">AI Relevance Score: ${p.relevanceScore}</div>` : ''}
-          <div class="tags">#${p.tags.slice(0, 4).join(' #')}</div>
+        <div class="card ${selectedProductId === p.id ? 'selected' : ''}" onclick="loadRecommendations(${p.id})">
+          <div class="img-wrap">
+            <img src="${getImg(p.name)}" alt="${p.name}" loading="lazy" />
+            <span class="cat-tag">${p.category}</span>
+            <span class="rating-tag">⭐ ${p.rating}</span>
+          </div>
+          <div class="card-body">
+            <div>
+              <h3>${p.name}</h3>
+              <div class="price-row">
+                <span class="price">₹${p.price}</span>
+                ${p.relevanceScore ? `<span class="match-badge">Match: ${p.relevanceScore}</span>` : ''}
+              </div>
+              <div class="tags">#${p.tags.slice(0, 4).join(' #')}</div>
+            </div>
+            <button class="btn btn-cart" onclick="addToCart(event, ${p.id})">+ Add to Cart</button>
+          </div>
         </div>
       `).join('');
     }
 
     async function loadRecommendations(id) {
+      selectedProductId = id;
+      renderGrid(allProducts);
       const res = await fetch(`/api/recommendations/${id}`);
       const data = await res.json();
       const container = document.getElementById('recContainer');
-      container.innerHTML = `<div style="margin-bottom:0.6rem; color:#f8fafc;">Because you viewed <b>${data.baseProduct}</b>:</div>` +
+      container.innerHTML = `<div style="margin-bottom:0.65rem; font-size:0.84rem;">Because you viewed <b>${data.baseProduct}</b>:</div>` +
         data.recommendations.map(r => `
-          <div style="padding:0.6rem; background:#0f172a; border-radius:6px; margin-bottom:0.5rem; border-left:3px solid #38bdf8;">
-            <div style="font-weight:bold; color:#f8fafc;">${r.name} — <span style="color:#4ade80;">₹${r.price}</span></div>
-            <div style="font-size:0.8rem; color:#94a3b8;">${r.matchReason} (Score: ${r.similarityScore})</div>
+          <div class="rec-item">
+            <img src="${getImg(r.name)}" class="rec-thumb" alt="${r.name}" />
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:0.86rem;">${r.name}</div>
+              <div style="color:var(--emerald); font-weight:700; font-size:0.8rem;">₹${r.price} <span style="color:var(--primary); font-weight:600;">• Score ${r.similarityScore}</span></div>
+              <div style="font-size:0.74rem; color:var(--text-muted);">${r.matchReason}</div>
+            </div>
           </div>
         `).join('');
+    }
+
+    function quickAsk(text) {
+      document.getElementById('chatInput').value = text;
+      sendChat();
     }
 
     async function sendChat() {
@@ -131,7 +590,7 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    loadProducts();
+    checkView();
   </script>
 </body>
 </html>

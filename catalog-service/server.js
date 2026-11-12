@@ -35,6 +35,8 @@ async function initDB(retries = 10) {
   while (retries > 0) {
     try {
       pool = mysql.createPool(dbConfig);
+
+      // 1. Products Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS products (
           id INT AUTO_INCREMENT PRIMARY KEY,
@@ -46,16 +48,49 @@ async function initDB(retries = 10) {
         );
       `);
 
-      const [rows] = await pool.query('SELECT COUNT(*) AS count FROM products');
-      if (rows[0].count === 0) {
+      // 2. Users Table
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(100) NOT NULL,
+          email VARCHAR(150) UNIQUE NOT NULL,
+          password VARCHAR(150) NOT NULL
+        );
+      `);
+
+      // 3. Cart Items Table
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS cart_items (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          product_id INT NOT NULL,
+          quantity INT NOT NULL DEFAULT 1,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+        );
+      `);
+
+      // Seed Products
+      const [prodRows] = await pool.query('SELECT COUNT(*) AS count FROM products');
+      if (prodRows[0].count === 0) {
         for (const p of seedProducts) {
           await pool.query(
             'INSERT INTO products (name, category, price, rating, tags) VALUES (?, ?, ?, ?, ?)',
             [p.name, p.category, p.price, p.rating, JSON.stringify(p.tags)]
           );
         }
-        console.log('✅ Seeded MySQL products table');
       }
+
+      // Seed Default Demo User
+      const [userRows] = await pool.query('SELECT COUNT(*) AS count FROM users');
+      if (userRows[0].count === 0) {
+        await pool.query(
+          'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+          ['Maulic', 'maulic@auramart.in', '1234']
+        );
+      }
+
+      console.log('✅ MySQL initialized (products, users, cart_items)');
       return;
     } catch (err) {
       retries--;
@@ -66,6 +101,7 @@ async function initDB(retries = 10) {
   throw new Error('Could not connect to MySQL');
 }
 
+// Products Route
 app.get('/products', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM products ORDER BY id ASC');
@@ -79,10 +115,74 @@ app.get('/products', async (req, res) => {
   }
 });
 
+// Auth: Register or Login
+app.post('/auth/login', async (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+    if (!email || !password) return res.status(400).json({ error: "Email and password required" });
+
+    const [existing] = await pool.query('SELECT id, name, email, password FROM users WHERE email = ?', [email]);
+    if (existing.length > 0) {
+      if (existing[0].password !== password) {
+        return res.status(401).json({ error: "Invalid password" });
+      }
+      return res.json({ user: { id: existing[0].id, name: existing[0].name, email: existing[0].email } });
+    }
+
+    // Auto-register new user if email doesn't exist
+    const displayName = name || email.split('@')[0];
+    const [result] = await pool.query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [displayName, email, password]);
+    res.json({ user: { id: result.insertId, name: displayName, email } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Cart: Get User Cart
+app.get('/cart/:userId', async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT c.id AS cartItemId, c.quantity, p.id AS productId, p.name, p.price, p.category
+      FROM cart_items c
+      JOIN products p ON c.product_id = p.id
+      WHERE c.user_id = ?
+    `, [req.params.userId]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Cart: Add Item
+app.post('/cart/add', async (req, res) => {
+  try {
+    const { userId, productId } = req.body;
+    const [existing] = await pool.query('SELECT id, quantity FROM cart_items WHERE user_id = ? AND product_id = ?', [userId, productId]);
+    if (existing.length > 0) {
+      await pool.query('UPDATE cart_items SET quantity = quantity + 1 WHERE id = ?', [existing[0].id]);
+    } else {
+      await pool.query('INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, 1)', [userId, productId]);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Cart: Remove Item
+app.delete('/cart/remove/:cartItemId', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM cart_items WHERE id = ?', [req.params.cartItemId]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/health', (req, res) => res.json({ service: "catalog-service", db: "MySQL", status: "UP" }));
 
 initDB()
-  .then(() => app.listen(PORT, '0.0.0.0', () => console.log(`Catalog Service (MySQL) running on ${PORT}`)))
+  .then(() => app.listen(PORT, '0.0.0.0', () => console.log(`Catalog & Commerce Service (MySQL) running on ${PORT}`)))
   .catch(err => {
     console.error('MySQL init failed:', err);
     process.exit(1);
